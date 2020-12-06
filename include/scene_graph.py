@@ -8,8 +8,8 @@ from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
 
-import transformations as tr
-import easy_shaders as es
+import include.transformations as tr
+import include.easy_shaders as es
 
 
 # A simple class to handle a scene graph

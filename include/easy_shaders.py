@@ -9,7 +9,7 @@ import OpenGL.GL.shaders
 import numpy as np
 from PIL import Image
 
-import basic_shapes as bs
+import include.basic_shapes as bs
 
 
 # We will use 32 bits data, so we have 4 bytes
