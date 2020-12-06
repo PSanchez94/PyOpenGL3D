@@ -19,29 +19,30 @@ import include.scene_graph as sg
 import include.easy_shaders as es
 
 
-# A class to store the application control
-class Controller:
-    def __init__(self):
-        self.fillPolygon = False
-        self.showAxis = False
+import controller
 
-
-# we will use the global controller as communication with the callback function
-controller = Controller()
+controller = controller.Controller()
 
 
 def on_key(window, key, scancode, action, mods):
 
-    if action != glfw.PRESS:
-        return
-    
-    global controller
+    if action == glfw.PRESS:
+        if key == glfw.KEY_A:
+            controller.leftKeyOn = True
+        elif key == glfw.KEY_D:
+            controller.rightKeyOn = True
+        elif key == glfw.KEY_W and not controller.jumpKeyOn:
+            controller.jumpKeyOn = True
+        elif key == glfw.KEY_ESCAPE:
+            sys.exit()
 
-    if key == glfw.KEY_ESCAPE:
-        sys.exit()
-
-    else:
-        print('Unknown key')
+    elif action == glfw.RELEASE:
+        if key == glfw.KEY_A:
+            controller.leftKeyOn = False
+        elif key == glfw.KEY_D:
+            controller.rightKeyOn = False
+        elif key == glfw.KEY_W and controller.jumpKeyOn:
+            controller.jumpKeyOn = False
 
 
 if __name__ == "__main__":
