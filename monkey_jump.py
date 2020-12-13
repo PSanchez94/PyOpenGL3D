@@ -24,15 +24,35 @@ import controller
 controller = controller.Controller()
 
 
-def createPlane(length, r, g, b):
+def createPlane(axis, length, r, g, b):
+
+    vertices = None
+
 
     # Defining the location and colors of each vertex  of the shape
-    vertices = [
-    #    positions        colors
-        0, 0,  0, r, g, b,
-        length, 0,  0, r, g, b,
-        length,  length,  0, r, g, b,
-        0,  length,  0, r, g, b]
+    if axis == "z":
+        vertices = [
+            #    positions        colors
+            0, 0,  0, r, g, b,
+            length, 0,  0, r, g, b,
+            length,  length,  0, r, g, b,
+            0,  length,  0, r, g, b]
+
+    elif axis == "x":
+        vertices = [
+            #    positions        colors
+            0, 0,  0, r, g, b,
+            0, 0,  length, r, g, b,
+            length,  0,  length, r, g, b,
+            length,  0,  0, r, g, b]
+
+    elif axis == "y":
+        vertices = [
+            #    positions        colors
+            0, 0,  0, r, g, b,
+            0, length,  0, r, g, b,
+            0,  length,  length, r, g, b,
+            0,  0,  length, r, g, b]
 
     # Defining connections among vertices
     # We have a triangle every 3 indices specified
@@ -86,7 +106,7 @@ if __name__ == "__main__":
 
     # Assembling the shader program (pipeline) with both shaders
     mvpPipeline = es.SimpleModelViewProjectionShaderProgram()
-    
+
     # Telling OpenGL to use our shader program
     glUseProgram(mvpPipeline.shaderProgram)
 
@@ -99,7 +119,9 @@ if __name__ == "__main__":
 
     # Creating shapes on GPU memory
     gpuAxis = es.toGPUShape(bs.createAxis(7))
-    gpuZPlane = es.toGPUShape(createPlane(7, 0.3, 0.9, 0))
+    gpuZPlane = es.toGPUShape(createPlane("z", 7, 0.3, 0.9, 0.3))
+    gpuXPlane = es.toGPUShape(createPlane("x", 7, 0.3, 0.3, 0.9))
+    gpuYPlane = es.toGPUShape(createPlane("y", 7, 0.5, 0.5, 1))
 
     # Using the same view and projection matrices in the whole application
     projection = tr.perspective(60, float(width)/float(height), 0.1, 100)
@@ -139,14 +161,6 @@ if __name__ == "__main__":
                            GL_TRUE,
                            view)
 
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1,
-                           GL_TRUE,
-                           tr.translate(-3.5, 0, 0))
-        mvpPipeline.drawShape(gpuZPlane)
-
-
-
         # Filling or not the shapes depending on the controller state
         if controller.fillPolygon:
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
@@ -166,8 +180,18 @@ if __name__ == "__main__":
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                                1,
                                GL_TRUE,
-                               tr.translate(-3.5, -3.5, 0))
+                               tr.translate(-3.5, -3.5, -3.0))
             mvpPipeline.drawShape(gpuZPlane)
+            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                               1,
+                               GL_TRUE,
+                               tr.translate(-3.5, -3.5, -3.0))
+            mvpPipeline.drawShape(gpuXPlane)
+            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                               1,
+                               GL_TRUE,
+                               tr.translate(-3.5, -3.5, -3.0))
+            mvpPipeline.drawShape(gpuYPlane)
 
         # Once the render is done, buffers are swapped, showing only the complete scene.
         glfw.swap_buffers(window)
