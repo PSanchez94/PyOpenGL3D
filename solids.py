@@ -18,6 +18,7 @@ class HitBox:
             if self.x < hitbox.x + hitbox.width and self.x + self.width > hitbox.x:
                 return True
 
+    # TODO: Remove view class from model code
     def hitboxShape(self, image_filename):
 
         r = 1.0
@@ -60,6 +61,7 @@ class Banana(HitBox):
     def __init__(self, x, y):
         super().__init__(x, y - 0.1, 0.2, 0.2)
 
+    # TODO: Remove view class from model code
     def drawPlatform(self):
 
         platform_scale = sg.SceneGraphNode("Banana Scale")
@@ -69,3 +71,9 @@ class Banana(HitBox):
         platform_position.childs += [platform_scale]
 
         return platform_position
+
+
+class FakePlatform(Platform):
+    def __init__(self, x, y):
+        super().__init__(x, y - 0.1)
+        self.blinking = False

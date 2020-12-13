@@ -86,6 +86,19 @@ def on_key(window, key, scancode, action, mods):
 
 if __name__ == "__main__":
 
+    with open(sys.argv[1]) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+            for i in range(5):
+                if row[i] == "1":
+                    controller.add_platform(i, line_count)
+                elif row[i] == "x":
+                    controller.add_fake_platform(i, line_count)
+            line_count += 1
+
+    print(controller.platform_list)
+    print(controller.fake_platform_list)
     # Initialize glfw
     if not glfw.init():
         sys.exit()
@@ -119,9 +132,9 @@ if __name__ == "__main__":
 
     # Creating shapes on GPU memory
     gpuAxis = es.toGPUShape(bs.createAxis(7))
-    gpuZPlane = es.toGPUShape(createPlane("z", 7, 0.3, 0.9, 0.3))
-    gpuXPlane = es.toGPUShape(createPlane("x", 7, 0.3, 0.3, 0.9))
-    gpuYPlane = es.toGPUShape(createPlane("y", 7, 0.5, 0.5, 1))
+    gpuZPlane = es.toGPUShape(createPlane("z", 15, 0.3, 0.9, 0.3))
+    gpuXPlane = es.toGPUShape(createPlane("x", 15, 0.3, 0.3, 0.9))
+    gpuYPlane = es.toGPUShape(createPlane("y", 15, 0.5, 0.5, 1))
 
     # Using the same view and projection matrices in the whole application
     projection = tr.perspective(60, float(width)/float(height), 0.1, 100)
