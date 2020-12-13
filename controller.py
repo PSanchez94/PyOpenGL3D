@@ -15,6 +15,7 @@ class Controller:
         self.monkey = None
         self.gravity = -0.005
         self.platform_list = []
+        self.fake_platform_list = []
         self.current_floor = 0
         self.banana = None
         self.lost = False
@@ -22,7 +23,7 @@ class Controller:
         self.end_game_time = 0
 
         #TODO: Remove fill polygon debugging
-        self.fillPolygon = False
+        self.fillPolygon = True
         self.showAxis = True
 
     def createMonkey(self):
@@ -30,7 +31,6 @@ class Controller:
         self.monkey.gravity = self.gravity
 
     def moveMonkey(self):
-
         if self.banana.collidesWith(self.monkey):
             self.monkey.has_banana = True
 
@@ -59,6 +59,11 @@ class Controller:
                 if self.monkey.is_falling is False and self.monkey.is_jumping is False:
                     self.monkey.start_fall()
 
+        for fake_platform in self.fake_platform_list:
+            if self.monkey.collidesWith(fake_platform):
+                fake_platform.blinking = True
+                self.fake_platform_list.remove(fake_platform)
+
         self.monkey.move_x(self.leftKeyOn, self.rightKeyOn)
         self.monkey.move_y()
 
@@ -74,11 +79,15 @@ class Controller:
             self.monkey.x = 3.9
             return
 
+    # TODO: Remove view class from model code
     def drawStage(self):
         stage_scene = sg.SceneGraphNode("stage_scene")
 
         for platform in self.platform_list:
             stage_scene.childs += [platform.drawPlatform()]
+
+        for fake_platform in self.fake_platform_list:
+            stage_scene.childs += [fake_platform.drawPlatform()]
 
         if self.banana is not None:
             stage_scene.childs +=[self.banana.drawPlatform()]
@@ -87,6 +96,9 @@ class Controller:
 
     def add_platform(self, x, y):
         self.platform_list.append(solids.Platform(x+1, y+1))
+
+    def add_fake_platform(self, x, y):
+        self.fake_platform_list.append(solids.FakePlatform(x+1, y+1))
 
     def createBanana(self):
         self.banana = solids.Banana(self.platform_list[len(self.platform_list) - 1].x +
