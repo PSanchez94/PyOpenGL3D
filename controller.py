@@ -11,6 +11,8 @@ class Controller:
     def __init__(self):
         self.leftKeyOn = False
         self.rightKeyOn = False
+        self.forwrdKeyOn = False
+        self.backwrdKeyOn = False
         self.jumpKeyOn = False
         self.monkey = None
         self.gravity = -0.005
@@ -27,7 +29,7 @@ class Controller:
         self.showAxis = True
 
     def createMonkey(self):
-        self.monkey = monkey.Monkey(2.3, 0.0)
+        self.monkey = monkey.Monkey(2.3, 1.0, 0.0)
         self.monkey.gravity = self.gravity
 
     def moveMonkey(self):
@@ -37,14 +39,14 @@ class Controller:
         for platform in self.platform_list:
             if self.monkey.collidesWith(platform):
                 if self.monkey.is_jumping or self.monkey.is_falling:
-                    if platform.y < self.monkey.y < platform.y + platform.height < self.monkey.y + self.monkey.height:
-                        self.monkey.y = platform.y + platform.height
+                    if platform.z < self.monkey.z < platform.z + platform.height < self.monkey.z + self.monkey.height:
+                        self.monkey.z = platform.z + platform.height
                         self.monkey.is_jumping = False
                         self.monkey.is_falling = False
                         self.monkey.jump_vel = 0.0
                         return
-                    elif self.monkey.y < platform.y < self.monkey.y + self.monkey.height < platform.y + platform.height:
-                        self.monkey.y = platform.y - self.monkey.height
+                    elif self.monkey.z < platform.z < self.monkey.z + self.monkey.height < platform.z + platform.height:
+                        self.monkey.z = platform.z - self.monkey.height
                         self.monkey.start_fall()
                         return
 
@@ -65,10 +67,11 @@ class Controller:
                 self.fake_platform_list.remove(fake_platform)
 
         self.monkey.move_x(self.leftKeyOn, self.rightKeyOn)
-        self.monkey.move_y()
+        self.monkey.move_y(self.forwrdKeyOn, self.backwrdKeyOn)
+        self.monkey.move_z()
 
-        if self.monkey.y < 0:
-            self.monkey.y = 0
+        if self.monkey.z < 0:
+            self.monkey.z = 0
             self.monkey.is_jumping = False
             self.monkey.is_falling = False
             return
@@ -77,6 +80,12 @@ class Controller:
             return
         elif self.monkey.x > 3.9:
             self.monkey.x = 3.9
+            return
+        elif self.monkey.y < 0.8:
+            self.monkey.y = 0.8
+            return
+        elif self.monkey.y > 3.9:
+            self.monkey.y = 3.9
             return
 
     # TODO: Remove view class from model code
@@ -94,15 +103,18 @@ class Controller:
 
         return stage_scene
 
-    def add_platform(self, x, y):
-        self.platform_list.append(solids.Platform(x+1, y+1))
+    def add_platform(self, x, y, z):
+        self.platform_list.append(solids.Platform(x+1, y+1, z+1))
 
-    def add_fake_platform(self, x, y):
-        self.fake_platform_list.append(solids.FakePlatform(x+1, y+1))
+    def add_fake_platform(self, x, y, z):
+        self.fake_platform_list.append(solids.FakePlatform(x+1, y+1, z+1))
 
     def createBanana(self):
         self.banana = solids.Banana(self.platform_list[len(self.platform_list) - 1].x +
-                                    self.platform_list[len(self.platform_list) - 1].width/2,
-                                    self.platform_list[len(self.platform_list) - 1].y + 0.6)
+                                    self.platform_list[len(self.platform_list) - 1].width*0.5,
+                                    self.platform_list[len(self.platform_list) - 1].x +
+                                    self.platform_list[len(self.platform_list) - 1].depth*0.5,
+                                    self.platform_list[len(self.platform_list) - 1].z + 0.6)
 
-        self.banana.x -= self.banana.width/2
+        self.banana.x -= self.banana.width*0.5
+        self.banana.y -= self.banana.depth*0.5

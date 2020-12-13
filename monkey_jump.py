@@ -18,8 +18,8 @@ import include.basic_shapes as bs
 import include.scene_graph as sg
 import include.easy_shaders as es
 
-
 import controller
+
 
 controller = controller.Controller()
 
@@ -70,8 +70,14 @@ def on_key(window, key, scancode, action, mods):
             controller.leftKeyOn = True
         elif key == glfw.KEY_D:
             controller.rightKeyOn = True
+        elif key == glfw.KEY_S:
+            controller.backwrdKeyOn = True
+        elif key == glfw.KEY_X:
+            controller.forwrdKeyOn = True
         elif key == glfw.KEY_W and not controller.jumpKeyOn:
             controller.jumpKeyOn = True
+        elif key == glfw.KEY_SPACE:
+            controller.fillPolygon = not controller.fillPolygon
         elif key == glfw.KEY_ESCAPE:
             sys.exit()
 
@@ -80,6 +86,10 @@ def on_key(window, key, scancode, action, mods):
             controller.leftKeyOn = False
         elif key == glfw.KEY_D:
             controller.rightKeyOn = False
+        if key == glfw.KEY_S:
+            controller.backwrdKeyOn = False
+        elif key == glfw.KEY_X:
+            controller.forwrdKeyOn = False
         elif key == glfw.KEY_W and controller.jumpKeyOn:
             controller.jumpKeyOn = False
 
@@ -89,16 +99,16 @@ if __name__ == "__main__":
     with open(sys.argv[1]) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
+        depth = 0
         for row in csv_reader:
             for i in range(5):
                 if row[i] == "1":
-                    controller.add_platform(i, line_count)
+                    controller.add_platform(i, depth, line_count)
                 elif row[i] == "x":
-                    controller.add_fake_platform(i, line_count)
+                    controller.add_fake_platform(i, depth, line_count)
             line_count += 1
+            depth = 1 - np.cos(np.pi*0.5*line_count)
 
-    print(controller.platform_list)
-    print(controller.fake_platform_list)
     # Initialize glfw
     if not glfw.init():
         sys.exit()
@@ -131,15 +141,20 @@ if __name__ == "__main__":
     glEnable(GL_DEPTH_TEST)
 
     # Creating shapes on GPU memory
+    # TODO: Remove axis
     gpuAxis = es.toGPUShape(bs.createAxis(7))
-    gpuZPlane = es.toGPUShape(createPlane("z", 15, 0.3, 0.9, 0.3))
-    gpuXPlane = es.toGPUShape(createPlane("x", 15, 0.3, 0.3, 0.9))
-    gpuYPlane = es.toGPUShape(createPlane("y", 15, 0.5, 0.5, 1))
 
-    # Using the same view and projection matrices in the whole application
+    # Creating the main world planes
+    gpuZPlane = es.toGPUShape(createPlane("z", 12, 0.3, 0.9, 0.3))
+    gpuXPlane = es.toGPUShape(createPlane("x", 12, 0.3, 0.3, 0.9))
+    gpuYPlane = es.toGPUShape(createPlane("y", 12, 0.5, 0.5, 1))
+
+    # Using perspective projection
     projection = tr.perspective(60, float(width)/float(height), 0.1, 100)
-    glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "projection"), 1, GL_TRUE, projection)
+    glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "projection"),
+                       1, GL_TRUE, projection)
 
+    # Main angled view
     side_view = np.array([10 * np.cos(np.pi / 4), 10 * np.cos(np.pi / 4), 6])
     viewPos = side_view
 
@@ -170,9 +185,10 @@ if __name__ == "__main__":
         )
 
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "view"),
-                           1,
-                           GL_TRUE,
-                           view)
+                           1, GL_TRUE, view)
+
+        # Clearing the screen in both, color and depth
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # Filling or not the shapes depending on the controller state
         if controller.fillPolygon:
@@ -180,31 +196,22 @@ if __name__ == "__main__":
         else:
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
-        # Clearing the screen in both, color and depth
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(-3.5, -3.5, -3.0))
+        mvpPipeline.drawShape(gpuZPlane)
+
+        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(-3.5, -3.5, -3.0))
+        mvpPipeline.drawShape(gpuXPlane)
+
+        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(-3.5, -3.5, -3.0))
+        mvpPipeline.drawShape(gpuYPlane)
 
         if controller.showAxis:
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                               1,
-                               GL_TRUE,
-                               tr.identity())
+                               1, GL_TRUE, tr.identity())
             mvpPipeline.drawShape(gpuAxis, GL_LINES)
-
-            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                               1,
-                               GL_TRUE,
-                               tr.translate(-3.5, -3.5, -3.0))
-            mvpPipeline.drawShape(gpuZPlane)
-            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                               1,
-                               GL_TRUE,
-                               tr.translate(-3.5, -3.5, -3.0))
-            mvpPipeline.drawShape(gpuXPlane)
-            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                               1,
-                               GL_TRUE,
-                               tr.translate(-3.5, -3.5, -3.0))
-            mvpPipeline.drawShape(gpuYPlane)
 
         # Once the render is done, buffers are swapped, showing only the complete scene.
         glfw.swap_buffers(window)
