@@ -21,39 +21,36 @@ import include.easy_shaders as es
 
 import controller
 
-
 controller = controller.Controller()
 
 
 def createPlane(axis, length, r, g, b):
-
     vertices = None
-
 
     # Defining the location and colors of each vertex  of the shape
     if axis == "z":
         vertices = [
             #    positions        colors
-            0, 0,  0, r, g, b,
-            length, 0,  0, r, g, b,
-            length,  length,  0, r, g, b,
-            0,  length,  0, r, g, b]
+            0, 0, 0, r, g, b,
+            length, 0, 0, r, g, b,
+            length, length, 0, r, g, b,
+            0, length, 0, r, g, b]
 
     elif axis == "x":
         vertices = [
             #    positions        colors
-            0, 0,  0, r, g, b,
-            0, 0,  length, r, g, b,
-            length,  0,  length, r, g, b,
-            length,  0,  0, r, g, b]
+            0, 0, 0, r, g, b,
+            0, 0, length, r, g, b,
+            length, 0, length, r, g, b,
+            length, 0, 0, r, g, b]
 
     elif axis == "y":
         vertices = [
             #    positions        colors
-            0, 0,  0, r, g, b,
-            0, length,  0, r, g, b,
-            0,  length,  length, r, g, b,
-            0,  0,  length, r, g, b]
+            0, 0, 0, r, g, b,
+            0, length, 0, r, g, b,
+            0, length, length, r, g, b,
+            0, 0, length, r, g, b]
 
     # Defining connections among vertices
     # We have a triangle every 3 indices specified
@@ -65,7 +62,6 @@ def createPlane(axis, length, r, g, b):
 
 
 def on_key(window, key, scancode, action, mods):
-
     if action == glfw.PRESS:
         if key == glfw.KEY_A:
             controller.leftKeyOn = True
@@ -108,7 +104,7 @@ if __name__ == "__main__":
                 elif row[i] == "x":
                     controller.add_fake_platform(i, round(depth, 1), line_count)
             line_count += 1
-            depth = 1 - np.cos(np.pi*0.5*line_count)
+            depth = 1 - np.cos(np.pi * 0.5 * line_count)
 
     # Initialize glfw
     if not glfw.init():
@@ -152,6 +148,7 @@ if __name__ == "__main__":
 
     scene_movement = 1.0
     scene_moving = False
+    scene_up_view = False
     monkey_right = False
     monkey_left = False
 
@@ -167,7 +164,7 @@ if __name__ == "__main__":
         fake_platform.createShape()
 
     # Using perspective projection
-    projection = tr.perspective(50, float(width)/float(height), 0.1, 100)
+    projection = tr.perspective(50, float(width) / float(height), 0.1, 100)
     glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "projection"),
                        1, GL_TRUE, projection)
 
@@ -187,12 +184,15 @@ if __name__ == "__main__":
         t0 = t1
 
         if glfw.get_key(window, glfw.KEY_B) == glfw.PRESS:
+            scene_up_view = False
             viewPos = side_view
 
         elif glfw.get_key(window, glfw.KEY_N) == glfw.PRESS:
+            scene_up_view = False
             viewPos = np.array([0, 8, 0.1])
 
         elif glfw.get_key(window, glfw.KEY_M) == glfw.PRESS:
+            scene_up_view = True
             viewPos = np.array([0, 0.1, 7])
 
         view = tr.lookAt(
@@ -207,6 +207,7 @@ if __name__ == "__main__":
         # Clearing the screen in both, color and depth
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        # Drawing Planes
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
         mvpPipeline.drawShape(gpuZPlane)
@@ -219,25 +220,36 @@ if __name__ == "__main__":
                            1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
         mvpPipeline.drawShape(gpuYPlane)
 
+        # Drawing Monkey
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(controller.monkey.x - 3.5,
                                                     controller.monkey.y - 1.5,
                                                     controller.monkey.z - scene_movement))
         mvpPipeline.drawShape(controller.monkey.hitbox_shape)
 
+        # Drawing Banana
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(controller.banana.x - 3.5,
                                                     controller.banana.y - 1.5,
                                                     controller.banana.z - scene_movement))
         mvpPipeline.drawShape(controller.banana.hitbox_shape)
 
+        # Drawing Platforms
         for platform in controller.platform_list:
-            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                               1, GL_TRUE, tr.translate(platform.x - 3.5,
-                                                        platform.y - 1.5,
-                                                        platform.z - scene_movement))
-            mvpPipeline.drawShape(platform.hitbox_shape)
+            if scene_up_view and -2 < platform.z - scene_movement < 1.5:
+                glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                                   1, GL_TRUE, tr.translate(platform.x - 3.5,
+                                                            platform.y - 1.5,
+                                                            platform.z - scene_movement))
+                mvpPipeline.drawShape(platform.hitbox_shape)
+            elif not scene_up_view:
+                glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                                   1, GL_TRUE, tr.translate(platform.x - 3.5,
+                                                            platform.y - 1.5,
+                                                            platform.z - scene_movement))
+                mvpPipeline.drawShape(platform.hitbox_shape)
 
+        # Drawing Fake Platforms
         for fake_platform in controller.fake_platform_list:
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(fake_platform.x - 3.5,
@@ -257,7 +269,8 @@ if __name__ == "__main__":
                 scene_moving = False
 
         # Lose condition upon reaching base of scene
-        if controller.monkey.z < scene_movement - 2.3 and controller.lost is False:
+        if (controller.monkey.z < scene_movement - 2.3 or
+                controller.monkey.hitpoints == 0) and controller.lost is False:
             controller.lost = True
             controller.end_game_time = t1
 
@@ -265,8 +278,10 @@ if __name__ == "__main__":
         if controller.jumpKeyOn and controller.monkey.is_falling is False:
             controller.monkey.start_jump()
 
+        # Bullets iteration
         controller.check_bullets(t1)
 
+        # Drawing Bullets
         for a_bullet in controller.bullets:
             if a_bullet.hitbox_shape is None:
                 a_bullet.createShape()
@@ -301,7 +316,10 @@ if __name__ == "__main__":
             controller.leftKeyOn = False
             controller.rightKeyOn = False
             if t1 - controller.end_game_time > 1:
-                sys.exit("You fell out.")
+                if controller.monkey.hitpoints == 0:
+                    sys.exit("You died.")
+                else:
+                    sys.exit("You fell out.")
 
         # Filling or not the shapes depending on the controller state
         if controller.fillPolygon:
