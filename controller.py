@@ -119,6 +119,9 @@ class Controller:
             a_bullet.move_bullet()
             if a_bullet.collided or a_bullet.y > 4.0 or a_bullet.y < -0.4:
                 self.bullets.remove(a_bullet)
+                self.monkey.hitpoints -= a_bullet.collided
+                print(self.monkey.hitpoints)
+
 
 
     def createBanana(self):

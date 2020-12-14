@@ -18,6 +18,7 @@ jump_start_vel = 0.105
 class Monkey(solids.HitBox):
     def __init__(self, x, y, z):
         super().__init__(x, y, z, 0.3, 0.3, 0.5)
+        self.hitpoints = 3
         self.x_speed = 0.05
         self.y_speed = 0.05
         self.jump_vel = 0.0

@@ -103,7 +103,7 @@ if __name__ == "__main__":
         for row in csv_reader:
             for i in range(5):
                 if row[i] == "1":
-                    controller.add_platform(i, round(depth, 1), line_count)
+                    controller.add_platform(4 - i, round(depth, 1), line_count)
                 elif row[i] == "x":
                     controller.add_fake_platform(i, round(depth, 1), line_count)
             line_count += 1
