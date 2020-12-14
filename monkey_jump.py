@@ -156,12 +156,12 @@ if __name__ == "__main__":
         fake_platform.createShape()
 
     # Using perspective projection
-    projection = tr.perspective(60, float(width)/float(height), 0.1, 100)
+    projection = tr.perspective(50, float(width)/float(height), 0.1, 100)
     glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "projection"),
                        1, GL_TRUE, projection)
 
     # Main angled view
-    side_view = np.array([10 * np.cos(np.pi / 4), 10 * np.cos(np.pi / 4), 6])
+    side_view = np.array([5 * np.cos(np.pi / 4), 8 * np.cos(np.pi / 4), 2])
     viewPos = side_view
 
     t0 = glfw.get_time()
@@ -179,10 +179,10 @@ if __name__ == "__main__":
             viewPos = side_view
 
         elif glfw.get_key(window, glfw.KEY_N) == glfw.PRESS:
-            viewPos = np.array([0, 10, 0.1])
+            viewPos = np.array([0, 8, 0.1])
 
         elif glfw.get_key(window, glfw.KEY_M) == glfw.PRESS:
-            viewPos = np.array([0, 0.1, 10])
+            viewPos = np.array([0, 0.1, 7])
 
         view = tr.lookAt(
             viewPos,
