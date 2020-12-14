@@ -29,12 +29,12 @@ class Controller:
         self.showAxis = True
 
     def createMonkey(self):
-        self.monkey = monkey.Monkey(2.3, 2.3, 0.0)
+        self.monkey = monkey.Monkey(3.5, 1.5, 0.0)
         self.monkey.gravity = self.gravity
 
     def moveMonkey(self):
-        if self.banana.collidesWith(self.monkey):
-            self.monkey.has_banana = True
+        #if self.banana.collidesWith(self.monkey):
+        #    self.monkey.has_banana = True
 
         for platform in self.platform_list:
             if self.monkey.collidesWith(platform):
@@ -83,14 +83,14 @@ class Controller:
             self.monkey.is_jumping = False
             self.monkey.is_falling = False
             return
-        elif self.monkey.x < 0.8:
-            self.monkey.x = 0.8
+        elif self.monkey.x < 0.0:
+            self.monkey.x = 0.0
             return
-        elif self.monkey.x > 3.9:
-            self.monkey.x = 3.9
+        elif self.monkey.x > 6.5:
+            self.monkey.x = 6.5
             return
-        elif self.monkey.y < 0.8:
-            self.monkey.y = 0.8
+        elif self.monkey.y < 0.0:
+            self.monkey.y = 0.0
             return
         elif self.monkey.y > 3.9:
             self.monkey.y = 3.9

@@ -70,11 +70,11 @@ def on_key(window, key, scancode, action, mods):
             controller.leftKeyOn = True
         elif key == glfw.KEY_D:
             controller.rightKeyOn = True
-        elif key == glfw.KEY_S:
+        elif key == glfw.KEY_W:
             controller.backwrdKeyOn = True
-        elif key == glfw.KEY_X:
+        elif key == glfw.KEY_S:
             controller.forwrdKeyOn = True
-        elif key == glfw.KEY_W and not controller.jumpKeyOn:
+        elif key == glfw.KEY_SPACE and not controller.jumpKeyOn:
             controller.jumpKeyOn = True
         elif key == glfw.KEY_SPACE:
             controller.fillPolygon = not controller.fillPolygon
@@ -86,11 +86,11 @@ def on_key(window, key, scancode, action, mods):
             controller.leftKeyOn = False
         elif key == glfw.KEY_D:
             controller.rightKeyOn = False
-        if key == glfw.KEY_S:
+        if key == glfw.KEY_W:
             controller.backwrdKeyOn = False
-        elif key == glfw.KEY_X:
+        elif key == glfw.KEY_S:
             controller.forwrdKeyOn = False
-        elif key == glfw.KEY_W and controller.jumpKeyOn:
+        elif key == glfw.KEY_SPACE and controller.jumpKeyOn:
             controller.jumpKeyOn = False
 
 
@@ -148,6 +148,9 @@ if __name__ == "__main__":
     gpuZPlane = es.toGPUShape(createPlane("z", 12, 0.3, 0.9, 0.3))
     gpuXPlane = es.toGPUShape(createPlane("x", 12, 0.3, 0.3, 0.9))
     gpuYPlane = es.toGPUShape(createPlane("y", 12, 0.5, 0.5, 1))
+
+    controller.createMonkey()
+    controller.monkey.createShape()
 
     for platform in controller.platform_list:
         platform.createShape()
@@ -208,19 +211,31 @@ if __name__ == "__main__":
                            1, GL_TRUE, tr.translate(-3.5, -1.5, -3.0))
         mvpPipeline.drawShape(gpuYPlane)
 
+        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(controller.monkey.x - 3.5,
+                                                    controller.monkey.y - 1.5,
+                                                    controller.monkey.z - 3.0))
+        mvpPipeline.drawShape(controller.monkey.hitbox_shape)
+
         for platform in controller.platform_list:
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                               1, GL_TRUE, tr.translate(platform.x-3.5,
-                                                        platform.y-1.5,
-                                                        platform.z-3.0))
+                               1, GL_TRUE, tr.translate(platform.x - 3.5,
+                                                        platform.y - 1.5,
+                                                        platform.z - 3.0))
             mvpPipeline.drawShape(platform.hitbox_shape)
 
         for fake_platform in controller.fake_platform_list:
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                               1, GL_TRUE, tr.translate(fake_platform.x-3.5,
-                                                        fake_platform.y-1.5,
-                                                        fake_platform.z-3.0))
+                               1, GL_TRUE, tr.translate(fake_platform.x - 3.5,
+                                                        fake_platform.y - 1.5,
+                                                        fake_platform.z - 3.0))
             mvpPipeline.drawShape(fake_platform.hitbox_shape)
+
+        # Jump is key has been pressed and monkey is airborne
+        if controller.jumpKeyOn and controller.monkey.is_falling is False:
+            controller.monkey.start_jump()
+
+        controller.moveMonkey()
 
         # Filling or not the shapes depending on the controller state
         if controller.fillPolygon:

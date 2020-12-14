@@ -58,52 +58,21 @@ class Platform(HitBox):
     def __init__(self, x, y, z):
         super().__init__(x, y, z - 0.1, 1.0, 1.0, 0.13)
 
-    def drawPlatform(self):
-
-        platform = sg.SceneGraphNode("Platform ("
-                                     + str(self.x) + ", "
-                                     + str(self.y) + ", "
-                                     + str(self.z)
-                                     + ")")
-        platform.transform = tr.translate(self.x, self.y, self.z)
-        platform.childs += [es.toGPUShape(self.hitboxShape(0.7, 0.3, 0.3))]
-
-        return platform
-
     def createShape(self):
-        self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.7, 0.3, 0.3))
+        self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.3, 0.3, 0.0))
 
 class Banana(HitBox):
     def __init__(self, x, y, z):
         super().__init__(x, y, z - 0.1, 0.2, 0.2, 0.2)
 
-    # TODO: Remove view class from model code
-    def drawPlatform(self):
-
-        platform_scale = sg.SceneGraphNode("Banana Scale")
-        platform_scale.childs += [es.toGPUShape(self.hitboxShape(0.7, 0.7, 0.0))]
-        platform_position = sg.SceneGraphNode("Banana Position")
-        platform_position.transform = tr.translate(self.x, self.y, self.z)
-        platform_position.childs += [platform_scale]
-
-        return platform_position
+    def createShape(self):
+        self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.7, 0.7, 0.0))
 
 
 class FakePlatform(Platform):
     def __init__(self, x, y, z):
         super().__init__(x, y, z)
         self.blinking = False
-
-    def drawPlatform(self):
-        fake_platform = sg.SceneGraphNode("Fake Platform ("
-                                     + str(self.x) + ", "
-                                     + str(self.y) + ", "
-                                     + str(self.z)
-                                     + ")")
-        fake_platform.transform = tr.translate(self.x, self.y, self.z)
-        fake_platform.childs += [es.toGPUShape(self.hitboxShape(0.5, 0.5, 0.5))]
-
-        return platform
 
     def createShape(self):
         self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.5, 0.5, 0.5))

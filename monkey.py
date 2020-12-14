@@ -30,10 +30,10 @@ class Monkey(solids.HitBox):
         self.has_banana = False
 
     def move_x(self, left, right):
-        self.x += self.x_speed * (right - left)
+        self.x += self.x_speed * (left - right)
 
     def move_y(self, forwrd, backwrd):
-        self.y += self.y_speed * (backwrd - forwrd)
+        self.y += self.y_speed * (forwrd - backwrd)
 
     def move_z(self):
         if self.is_jumping or self.is_falling:
@@ -51,15 +51,9 @@ class Monkey(solids.HitBox):
         self.jump_vel = 0.0
         self.is_jumping = False
 
-    # TODO: Remove view class from model code
-    def createMonkey(self):
-        # TODO: How to animate. Change texture per time?
-        # monkey_texture= es.toGPUShape(bs.createTextureQuad("textures/wheel.png", 1, 1), GL_REPEAT, GL_NEAREST)
-
-        monkey_texture = sg.SceneGraphNode("Monkey Texture")
-        monkey_texture.transform = tr.translate(self.x, self.y, self.z - self.height)
-        return monkey_texture
+    def createShape(self):
+        self.hitbox_shape = es.toGPUShape(self.hitboxShape())
 
     def collidesWith(self, hitbox):
         if self.collision:
-            super().collidesWith(hitbox)
+            return super().collidesWith(hitbox)
