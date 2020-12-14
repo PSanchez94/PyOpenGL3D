@@ -98,14 +98,14 @@ if __name__ == "__main__":
 
     with open(sys.argv[1]) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        depth = 0
+        line_count = 0.0
+        depth = 0.0
         for row in csv_reader:
             for i in range(5):
                 if row[i] == "1":
-                    controller.add_platform(i, depth, line_count)
+                    controller.add_platform(i, round(depth, 1), line_count)
                 elif row[i] == "x":
-                    controller.add_fake_platform(i, depth, line_count)
+                    controller.add_fake_platform(i, round(depth, 1), line_count)
             line_count += 1
             depth = 1 - np.cos(np.pi*0.5*line_count)
 
@@ -149,6 +149,12 @@ if __name__ == "__main__":
     gpuXPlane = es.toGPUShape(createPlane("x", 12, 0.3, 0.3, 0.9))
     gpuYPlane = es.toGPUShape(createPlane("y", 12, 0.5, 0.5, 1))
 
+    for platform in controller.platform_list:
+        platform.createShape()
+
+    for fake_platform in controller.fake_platform_list:
+        fake_platform.createShape()
+
     # Using perspective projection
     projection = tr.perspective(60, float(width)/float(height), 0.1, 100)
     glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "projection"),
@@ -190,24 +196,39 @@ if __name__ == "__main__":
         # Clearing the screen in both, color and depth
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(-3.5, -1.5, -3.0))
+        mvpPipeline.drawShape(gpuZPlane)
+
+        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(-3.5, -1.5, -3.0))
+        mvpPipeline.drawShape(gpuXPlane)
+
+        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(-3.5, -1.5, -3.0))
+        mvpPipeline.drawShape(gpuYPlane)
+
+        for platform in controller.platform_list:
+            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                               1, GL_TRUE, tr.translate(platform.x-3.5,
+                                                        platform.y-1.5,
+                                                        platform.z-3.0))
+            mvpPipeline.drawShape(platform.hitbox_shape)
+
+        for fake_platform in controller.fake_platform_list:
+            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                               1, GL_TRUE, tr.translate(fake_platform.x-3.5,
+                                                        fake_platform.y-1.5,
+                                                        fake_platform.z-3.0))
+            mvpPipeline.drawShape(fake_platform.hitbox_shape)
+
         # Filling or not the shapes depending on the controller state
         if controller.fillPolygon:
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         else:
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -3.5, -3.0))
-        mvpPipeline.drawShape(gpuZPlane)
-
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -3.5, -3.0))
-        mvpPipeline.drawShape(gpuXPlane)
-
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -3.5, -3.0))
-        mvpPipeline.drawShape(gpuYPlane)
-
+        # World axis
         if controller.showAxis:
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.identity())

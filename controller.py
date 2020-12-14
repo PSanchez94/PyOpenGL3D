@@ -29,7 +29,7 @@ class Controller:
         self.showAxis = True
 
     def createMonkey(self):
-        self.monkey = monkey.Monkey(2.3, 1.0, 0.0)
+        self.monkey = monkey.Monkey(2.3, 2.3, 0.0)
         self.monkey.gravity = self.gravity
 
     def moveMonkey(self):
@@ -56,6 +56,14 @@ class Controller:
                         return
                     elif self.monkey.x < platform.x < self.monkey.x + self.monkey.width:
                         self.monkey.x = platform.x - self.monkey.width
+                        return
+
+                elif self.forwrdKeyOn or self.backwrdKeyOn:
+                    if self.monkey.y < platform.y + platform.depth < self.monkey.y + self.monkey.depth:
+                        self.monkey.y = platform.y + platform.depth
+                        return
+                    elif self.monkey.y < platform.y < self.monkey.y + self.monkey.depth:
+                        self.monkey.y = platform.y - self.monkey.depth
                         return
             else:
                 if self.monkey.is_falling is False and self.monkey.is_jumping is False:
@@ -104,10 +112,10 @@ class Controller:
         return stage_scene
 
     def add_platform(self, x, y, z):
-        self.platform_list.append(solids.Platform(x+1, y+1, z+1))
+        self.platform_list.append(solids.Platform(x+1, y, z+1))
 
     def add_fake_platform(self, x, y, z):
-        self.fake_platform_list.append(solids.FakePlatform(x+1, y+1, z+1))
+        self.fake_platform_list.append(solids.FakePlatform(x+1, y, z+1))
 
     def createBanana(self):
         self.banana = solids.Banana(self.platform_list[len(self.platform_list) - 1].x +
