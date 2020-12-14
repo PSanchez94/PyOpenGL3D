@@ -3,8 +3,6 @@ import solids
 import monkey
 import bullet
 
-
-
 class Controller:
     def __init__(self):
         self.leftKeyOn = False
@@ -23,6 +21,7 @@ class Controller:
         self.won = False
         self.end_game_time = 0
         self.last_bullet_time = 0
+        self.t1 = 0.0
 
         #TODO: Remove fill polygon debugging
         self.fillPolygon = True
@@ -32,47 +31,57 @@ class Controller:
         self.monkey = monkey.Monkey(3.5, 1.5, 0.0)
         self.monkey.gravity = self.gravity
 
+    def monkeyCollision(self, platform):
+        if self.monkey.is_jumping or self.monkey.is_falling:
+            if platform.z < self.monkey.z < platform.z + platform.height < self.monkey.z + self.monkey.height:
+                self.monkey.z = platform.z + platform.height
+                self.monkey.is_jumping = False
+                self.monkey.is_falling = False
+                self.monkey.jump_vel = 0.0
+                return
+            elif self.monkey.z < platform.z < self.monkey.z + self.monkey.height < platform.z + platform.height:
+                self.monkey.z = platform.z - self.monkey.height
+                self.monkey.start_fall()
+                return
+
+        elif self.leftKeyOn or self.rightKeyOn:
+            if self.monkey.x < platform.x + platform.width < self.monkey.x + self.monkey.width:
+                self.monkey.x = platform.x + platform.width
+                return
+            elif self.monkey.x < platform.x < self.monkey.x + self.monkey.width:
+                self.monkey.x = platform.x - self.monkey.width
+                return
+
+        elif self.forwrdKeyOn or self.backwrdKeyOn:
+            if self.monkey.y < platform.y + platform.depth < self.monkey.y + self.monkey.depth:
+                self.monkey.y = platform.y + platform.depth
+                return
+            elif self.monkey.y < platform.y < self.monkey.y + self.monkey.depth:
+                self.monkey.y = platform.y - self.monkey.depth
+                return
+
     def moveMonkey(self):
         if self.banana.collidesWith(self.monkey):
             self.monkey.has_banana = True
 
         for platform in self.platform_list:
             if self.monkey.collidesWith(platform):
-                if self.monkey.is_jumping or self.monkey.is_falling:
-                    if platform.z < self.monkey.z < platform.z + platform.height < self.monkey.z + self.monkey.height:
-                        self.monkey.z = platform.z + platform.height
-                        self.monkey.is_jumping = False
-                        self.monkey.is_falling = False
-                        self.monkey.jump_vel = 0.0
-                        return
-                    elif self.monkey.z < platform.z < self.monkey.z + self.monkey.height < platform.z + platform.height:
-                        self.monkey.z = platform.z - self.monkey.height
-                        self.monkey.start_fall()
-                        return
-
-                elif self.leftKeyOn or self.rightKeyOn:
-                    if self.monkey.x < platform.x + platform.width < self.monkey.x + self.monkey.width:
-                        self.monkey.x = platform.x + platform.width
-                        return
-                    elif self.monkey.x < platform.x < self.monkey.x + self.monkey.width:
-                        self.monkey.x = platform.x - self.monkey.width
-                        return
-
-                elif self.forwrdKeyOn or self.backwrdKeyOn:
-                    if self.monkey.y < platform.y + platform.depth < self.monkey.y + self.monkey.depth:
-                        self.monkey.y = platform.y + platform.depth
-                        return
-                    elif self.monkey.y < platform.y < self.monkey.y + self.monkey.depth:
-                        self.monkey.y = platform.y - self.monkey.depth
-                        return
+                self.monkeyCollision(platform)
+                return
             else:
                 if self.monkey.is_falling is False and self.monkey.is_jumping is False:
                     self.monkey.start_fall()
 
         for fake_platform in self.fake_platform_list:
-            if self.monkey.collidesWith(fake_platform):
+            if self.monkey.collidesWith(fake_platform) and not fake_platform.blinking:
                 fake_platform.blinking = True
+                fake_platform.blink_time = self.t1
+            elif self.t1 - fake_platform.blink_time > 1.0 and fake_platform.blinking:
                 self.fake_platform_list.remove(fake_platform)
+
+            if self.monkey.collidesWith(fake_platform):
+                self.monkeyCollision(fake_platform)
+                return
 
         for a_bullet in self.bullets:
             if self.monkey.collidesWith(a_bullet):
@@ -120,8 +129,6 @@ class Controller:
             if a_bullet.collided or a_bullet.y > 4.0 or a_bullet.y < -0.4:
                 self.bullets.remove(a_bullet)
                 self.monkey.hitpoints -= a_bullet.collided
-                print(self.monkey.hitpoints)
-
 
 
     def createBanana(self):

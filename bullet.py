@@ -20,6 +20,3 @@ class Bullet(solids.HitBox):
 
     def createShape(self):
         self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.3, 0.1, 0.4))
-
-    def collidesWith(self, hitbox):
-        return super().collidesWith(hitbox)

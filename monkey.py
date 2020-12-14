@@ -4,11 +4,7 @@ Pablo Sanchez.
 Monkey movement and animation definitions.
 
 """
-import include.transformations as tr
 import include.easy_shaders as es
-
-# SCENE GRAPH TODO: Is this neccesary?
-import include.scene_graph as sg
 
 import solids
 

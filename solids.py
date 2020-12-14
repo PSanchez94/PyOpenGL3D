@@ -1,10 +1,5 @@
-import include.transformations as tr
 import include.easy_shaders as es
-import include.scene_graph as sg
 import include.basic_shapes as bs
-
-from OpenGL.GL import *
-
 
 class HitBox:
     def __init__(self, x, y, z, w, d, h):
@@ -74,6 +69,7 @@ class FakePlatform(Platform):
     def __init__(self, x, y, z):
         super().__init__(x, y, z)
         self.blinking = False
+        self.blink_time = 0.0
 
     def createShape(self):
         self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.5, 0.5, 0.5))

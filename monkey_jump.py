@@ -16,7 +16,6 @@ import numpy as np
 
 import include.transformations as tr
 import include.basic_shapes as bs
-import include.scene_graph as sg
 import include.easy_shaders as es
 
 import controller
@@ -173,6 +172,7 @@ if __name__ == "__main__":
     viewPos = side_view
 
     t0 = glfw.get_time()
+    controller.t1 = t0
 
     while not glfw.window_should_close(window):
         # Using GLFW to check for input events
@@ -182,6 +182,7 @@ if __name__ == "__main__":
         t1 = glfw.get_time()
         dt = t1 - t0
         t0 = t1
+        controller.t1 = t1
 
         if glfw.get_key(window, glfw.KEY_B) == glfw.PRESS:
             scene_up_view = False
@@ -211,13 +212,7 @@ if __name__ == "__main__":
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
         mvpPipeline.drawShape(gpuZPlane)
-
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
         mvpPipeline.drawShape(gpuXPlane)
-
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
         mvpPipeline.drawShape(gpuYPlane)
 
         # Drawing Monkey
@@ -236,17 +231,14 @@ if __name__ == "__main__":
 
         # Drawing Platforms
         for platform in controller.platform_list:
+            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                               1, GL_TRUE, tr.translate(platform.x - 3.5,
+                                                        platform.y - 1.5,
+                                                        platform.z - scene_movement))
+
             if scene_up_view and -2 < platform.z - scene_movement < 1.5:
-                glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                                   1, GL_TRUE, tr.translate(platform.x - 3.5,
-                                                            platform.y - 1.5,
-                                                            platform.z - scene_movement))
                 mvpPipeline.drawShape(platform.hitbox_shape)
             elif not scene_up_view:
-                glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                                   1, GL_TRUE, tr.translate(platform.x - 3.5,
-                                                            platform.y - 1.5,
-                                                            platform.z - scene_movement))
                 mvpPipeline.drawShape(platform.hitbox_shape)
 
         # Drawing Fake Platforms
@@ -255,7 +247,11 @@ if __name__ == "__main__":
                                1, GL_TRUE, tr.translate(fake_platform.x - 3.5,
                                                         fake_platform.y - 1.5,
                                                         fake_platform.z - scene_movement))
-            mvpPipeline.drawShape(fake_platform.hitbox_shape)
+
+            if np.sin((fake_platform.blink_time - t1)*np.pi*5) < 0 and fake_platform.blinking:
+                mvpPipeline.drawShape(fake_platform.hitbox_shape)
+            elif not fake_platform.blinking:
+                mvpPipeline.drawShape(fake_platform.hitbox_shape)
 
         # Move scene upon reaching 2 floors above current one
         if math.floor(controller.monkey.z) > controller.current_floor + 1.0 and scene_moving is False:
