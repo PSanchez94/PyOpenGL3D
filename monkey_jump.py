@@ -76,7 +76,7 @@ def on_key(window, key, scancode, action, mods):
             controller.forwrdKeyOn = True
         elif key == glfw.KEY_SPACE and not controller.jumpKeyOn:
             controller.jumpKeyOn = True
-        elif key == glfw.KEY_SPACE:
+        elif key == glfw.KEY_X:
             controller.fillPolygon = not controller.fillPolygon
         elif key == glfw.KEY_ESCAPE:
             sys.exit()
@@ -151,6 +151,8 @@ if __name__ == "__main__":
 
     controller.createMonkey()
     controller.monkey.createShape()
+    controller.createBanana()
+    controller.banana.createShape()
 
     for platform in controller.platform_list:
         platform.createShape()
@@ -217,6 +219,12 @@ if __name__ == "__main__":
                                                     controller.monkey.z - 3.0))
         mvpPipeline.drawShape(controller.monkey.hitbox_shape)
 
+        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(controller.banana.x - 3.5,
+                                                    controller.banana.y - 1.5,
+                                                    controller.banana.z - 3.0))
+        mvpPipeline.drawShape(controller.banana.hitbox_shape)
+
         for platform in controller.platform_list:
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(platform.x - 3.5,
@@ -234,6 +242,18 @@ if __name__ == "__main__":
         # Jump is key has been pressed and monkey is airborne
         if controller.jumpKeyOn and controller.monkey.is_falling is False:
             controller.monkey.start_jump()
+
+        controller.check_bullets(t1)
+
+        for a_bullet in controller.bullets:
+            if a_bullet.hitbox_shape is None:
+                a_bullet.createShape()
+
+            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+                               1, GL_TRUE, tr.translate(a_bullet.x - 3.5,
+                                                        a_bullet.y - 1.5,
+                                                        a_bullet.z - 3.0))
+            mvpPipeline.drawShape(a_bullet.hitbox_shape)
 
         controller.moveMonkey()
 

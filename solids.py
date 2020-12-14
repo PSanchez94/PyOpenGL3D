@@ -61,12 +61,13 @@ class Platform(HitBox):
     def createShape(self):
         self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.3, 0.3, 0.0))
 
+
 class Banana(HitBox):
     def __init__(self, x, y, z):
-        super().__init__(x, y, z - 0.1, 0.2, 0.2, 0.2)
+        super().__init__(x, y, z, 0.2, 0.2, 0.2)
 
     def createShape(self):
-        self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.7, 0.7, 0.0))
+        self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.9, 0.8, 0.0))
 
 
 class FakePlatform(Platform):
