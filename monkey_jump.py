@@ -7,6 +7,7 @@ Monkey Jump 3D:
 A Python OpenGL 3D implementation of a platform game.
 """
 
+import math
 import glfw
 from OpenGL.GL import *
 import sys
@@ -149,6 +150,11 @@ if __name__ == "__main__":
     gpuXPlane = es.toGPUShape(createPlane("x", 12, 0.3, 0.3, 0.9))
     gpuYPlane = es.toGPUShape(createPlane("y", 12, 0.5, 0.5, 1))
 
+    scene_movement = 1.0
+    scene_moving = False
+    monkey_right = False
+    monkey_left = False
+
     controller.createMonkey()
     controller.monkey.createShape()
     controller.createBanana()
@@ -202,42 +208,58 @@ if __name__ == "__main__":
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -1.5, -3.0))
+                           1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
         mvpPipeline.drawShape(gpuZPlane)
 
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -1.5, -3.0))
+                           1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
         mvpPipeline.drawShape(gpuXPlane)
 
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -1.5, -3.0))
+                           1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
         mvpPipeline.drawShape(gpuYPlane)
 
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(controller.monkey.x - 3.5,
                                                     controller.monkey.y - 1.5,
-                                                    controller.monkey.z - 3.0))
+                                                    controller.monkey.z - scene_movement))
         mvpPipeline.drawShape(controller.monkey.hitbox_shape)
 
         glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(controller.banana.x - 3.5,
                                                     controller.banana.y - 1.5,
-                                                    controller.banana.z - 3.0))
+                                                    controller.banana.z - scene_movement))
         mvpPipeline.drawShape(controller.banana.hitbox_shape)
 
         for platform in controller.platform_list:
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(platform.x - 3.5,
                                                         platform.y - 1.5,
-                                                        platform.z - 3.0))
+                                                        platform.z - scene_movement))
             mvpPipeline.drawShape(platform.hitbox_shape)
 
         for fake_platform in controller.fake_platform_list:
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(fake_platform.x - 3.5,
                                                         fake_platform.y - 1.5,
-                                                        fake_platform.z - 3.0))
+                                                        fake_platform.z - scene_movement))
             mvpPipeline.drawShape(fake_platform.hitbox_shape)
+
+        # Move scene upon reaching 2 floors above current one
+        if math.floor(controller.monkey.z) > controller.current_floor + 1.0 and scene_moving is False:
+            scene_moving = True
+            controller.current_floor = math.floor(controller.monkey.z)
+
+        # Move the scene smoothly
+        if scene_moving and scene_movement < controller.current_floor:
+            scene_movement += 0.05
+            if scene_movement > controller.current_floor:
+                scene_moving = False
+
+        # Lose condition upon reaching base of scene
+        if controller.monkey.y < scene_movement + 0.3 and controller.lost is False:
+            controller.lost = True
+            controller.end_game_time = t1
 
         # Jump is key has been pressed and monkey is airborne
         if controller.jumpKeyOn and controller.monkey.is_falling is False:
@@ -252,7 +274,7 @@ if __name__ == "__main__":
             glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(a_bullet.x - 3.5,
                                                         a_bullet.y - 1.5,
-                                                        a_bullet.z - 3.0))
+                                                        a_bullet.z - scene_movement))
             mvpPipeline.drawShape(a_bullet.hitbox_shape)
 
         controller.moveMonkey()
