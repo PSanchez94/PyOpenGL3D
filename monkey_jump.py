@@ -257,7 +257,7 @@ if __name__ == "__main__":
                 scene_moving = False
 
         # Lose condition upon reaching base of scene
-        if controller.monkey.y < scene_movement + 0.3 and controller.lost is False:
+        if controller.monkey.z < scene_movement - 2.3 and controller.lost is False:
             controller.lost = True
             controller.end_game_time = t1
 
@@ -277,7 +277,31 @@ if __name__ == "__main__":
                                                         a_bullet.z - scene_movement))
             mvpPipeline.drawShape(a_bullet.hitbox_shape)
 
-        controller.moveMonkey()
+        # Win condition
+        if controller.won is False and controller.monkey.has_banana:
+            controller.won = True
+            controller.end_game_time = t1
+        elif controller.won:
+            monkey_left = False
+            monkey_right = False
+            controller.leftKeyOn = False
+            controller.rightKeyOn = False
+            if t1 - controller.end_game_time > 0.4:
+                sys.exit("You won!")
+        else:
+            controller.moveMonkey()
+
+        # Lose animation start and end
+        if controller.lost:
+            monkey_left = False
+            monkey_right = False
+            controller.monkey.collision = False
+            controller.monkey.start_jump()
+            controller.monkey.is_falling = False
+            controller.leftKeyOn = False
+            controller.rightKeyOn = False
+            if t1 - controller.end_game_time > 1:
+                sys.exit("You fell out.")
 
         # Filling or not the shapes depending on the controller state
         if controller.fillPolygon:
