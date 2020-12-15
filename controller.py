@@ -43,35 +43,34 @@ class Controller:
                 self.monkey.z = platform.z - self.monkey.height
                 self.monkey.start_fall()
                 return
+            else:
+                if self.leftKeyOn or self.rightKeyOn:
+                    if self.monkey.x < platform.x + platform.width < self.monkey.x + self.monkey.width:
+                        self.monkey.x = platform.x + platform.width
+                    elif self.monkey.x < platform.x < self.monkey.x + self.monkey.width:
+                        self.monkey.x = platform.x - self.monkey.width
+                    self.monkey.move_x(self.leftKeyOn, self.rightKeyOn)
 
-        elif self.leftKeyOn or self.rightKeyOn:
-            if self.monkey.x < platform.x + platform.width < self.monkey.x + self.monkey.width:
-                self.monkey.x = platform.x + platform.width
-                return
-            elif self.monkey.x < platform.x < self.monkey.x + self.monkey.width:
-                self.monkey.x = platform.x - self.monkey.width
-                return
-
-        elif self.forwrdKeyOn or self.backwrdKeyOn:
-            if self.monkey.y < platform.y + platform.depth < self.monkey.y + self.monkey.depth:
-                self.monkey.y = platform.y + platform.depth
-                return
-            elif self.monkey.y < platform.y < self.monkey.y + self.monkey.depth:
-                self.monkey.y = platform.y - self.monkey.depth
+                if self.forwrdKeyOn or self.backwrdKeyOn:
+                    if self.monkey.y < platform.y + platform.depth < self.monkey.y + self.monkey.depth:
+                        self.monkey.y = platform.y + platform.depth
+                    elif self.monkey.y < platform.y < self.monkey.y + self.monkey.depth:
+                        self.monkey.y = platform.y - self.monkey.depth
+                    self.monkey.move_y(self.forwrdKeyOn, self.backwrdKeyOn)
+                self.monkey.move_z()
                 return
 
     def moveMonkey(self):
         if self.banana.collidesWith(self.monkey):
             self.monkey.has_banana = True
 
+        # Platform iteration
         for platform in self.platform_list:
             if self.monkey.collidesWith(platform):
                 self.monkeyCollision(platform)
                 return
-            else:
-                if self.monkey.is_falling is False and self.monkey.is_jumping is False:
-                    self.monkey.start_fall()
 
+        # Fake platform iteration
         for fake_platform in self.fake_platform_list:
             if self.monkey.collidesWith(fake_platform) and not fake_platform.blinking:
                 fake_platform.blinking = True
@@ -86,6 +85,9 @@ class Controller:
         for a_bullet in self.bullets:
             if self.monkey.collidesWith(a_bullet):
                 a_bullet.collided = True
+
+        if self.monkey.is_falling is False and self.monkey.is_jumping is False:
+            self.monkey.start_fall()
 
         self.monkey.move_x(self.leftKeyOn, self.rightKeyOn)
         self.monkey.move_y(self.forwrdKeyOn, self.backwrdKeyOn)

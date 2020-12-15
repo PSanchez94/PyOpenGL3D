@@ -101,7 +101,7 @@ if __name__ == "__main__":
                 if row[i] == "1":
                     controller.add_platform(4 - i, round(depth, 1), line_count)
                 elif row[i] == "x":
-                    controller.add_fake_platform(i, round(depth, 1), line_count)
+                    controller.add_fake_platform(4 - i, round(depth, 1), line_count)
             line_count += 1
             depth = 1 - np.cos(np.pi * 0.5 * line_count)
 
@@ -168,7 +168,7 @@ if __name__ == "__main__":
                        1, GL_TRUE, projection)
 
     # Main angled view
-    side_view = np.array([5 * np.cos(np.pi / 4), 8 * np.cos(np.pi / 4), 2])
+    side_view = np.array([5 * np.cos(np.pi / 4), 10 * np.cos(np.pi / 4), 2])
     viewPos = side_view
 
     t0 = glfw.get_time()
