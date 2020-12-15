@@ -117,12 +117,12 @@ class Controller:
     def add_fake_platform(self, x, y, z):
         self.fake_platform_list.append(solids.FakePlatform(x+1, y, z+1))
 
-    def check_bullets(self, time):
+    def check_bullets(self, scene, time):
         if len(self.bullets) < 4 and time - self.last_bullet_time > 1.0:
             direction = rnd.randrange(0, 2)
             self.bullets.append(bullet.Bullet(rnd.randrange(1, 6) + 0.4,
                                               4.0*direction,
-                                              rnd.randrange(0, 3) + 0.3,
+                                              round(scene, 1) + rnd.randrange(0, 3) - 0.7,
                                               direction))
             self.last_bullet_time = time
 

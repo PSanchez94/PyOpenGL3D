@@ -275,7 +275,7 @@ if __name__ == "__main__":
             controller.monkey.start_jump()
 
         # Bullets iteration
-        controller.check_bullets(t1)
+        controller.check_bullets(scene_movement, t1)
 
         # Drawing Bullets
         for a_bullet in controller.bullets:
