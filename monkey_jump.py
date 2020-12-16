@@ -124,10 +124,10 @@ if __name__ == "__main__":
     glfw.set_key_callback(window, on_key)
 
     # Assembling the shader program (pipeline) with both shaders
-    mvpPipeline = es.SimpleModelViewProjectionShaderProgram()
+    mj_pipeline = es.SimpleModelViewProjectionShaderProgram()
 
     # Telling OpenGL to use our shader program
-    glUseProgram(mvpPipeline.shaderProgram)
+    glUseProgram(mj_pipeline.shaderProgram)
 
     # Setting up the clear screen color
     glClearColor(0.15, 0.15, 0.15, 1.0)
@@ -150,6 +150,7 @@ if __name__ == "__main__":
     scene_up_view = False
     monkey_right = False
     monkey_left = False
+    ortho_view = False
 
     controller.createMonkey()
     controller.monkey.createShape()
@@ -164,7 +165,7 @@ if __name__ == "__main__":
 
     # Using perspective projection
     projection = tr.perspective(50, float(width) / float(height), 0.1, 100)
-    glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "projection"),
+    glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "projection"),
                        1, GL_TRUE, projection)
 
     # Main angled view
@@ -202,56 +203,56 @@ if __name__ == "__main__":
             np.array([0, 0, 1])
         )
 
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "view"),
+        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "view"),
                            1, GL_TRUE, view)
 
         # Clearing the screen in both, color and depth
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # Drawing Planes
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(-3.5, -1.5, -scene_movement))
-        mvpPipeline.drawShape(gpuZPlane)
-        mvpPipeline.drawShape(gpuXPlane)
-        mvpPipeline.drawShape(gpuYPlane)
+        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
+                           1, GL_TRUE, tr.translate(-3.5, -2.0, -scene_movement))
+        mj_pipeline.drawShape(gpuZPlane)
+        mj_pipeline.drawShape(gpuXPlane)
+        mj_pipeline.drawShape(gpuYPlane)
 
         # Drawing Monkey
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(controller.monkey.x - 3.5,
                                                     controller.monkey.y - 1.5,
                                                     controller.monkey.z - scene_movement))
-        mvpPipeline.drawShape(controller.monkey.hitbox_shape)
+        mj_pipeline.drawShape(controller.monkey.hitbox_shape)
 
         # Drawing Banana
-        glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(controller.banana.x - 3.5,
                                                     controller.banana.y - 1.5,
                                                     controller.banana.z - scene_movement))
-        mvpPipeline.drawShape(controller.banana.hitbox_shape)
+        mj_pipeline.drawShape(controller.banana.hitbox_shape)
 
         # Drawing Platforms
         for platform in controller.platform_list:
-            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+            glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(platform.x - 3.5,
                                                         platform.y - 1.5,
                                                         platform.z - scene_movement))
 
             if scene_up_view and -2 < platform.z - scene_movement < 1.5:
-                mvpPipeline.drawShape(platform.hitbox_shape)
+                mj_pipeline.drawShape(platform.hitbox_shape)
             elif not scene_up_view:
-                mvpPipeline.drawShape(platform.hitbox_shape)
+                mj_pipeline.drawShape(platform.hitbox_shape)
 
         # Drawing Fake Platforms
         for fake_platform in controller.fake_platform_list:
-            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+            glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(fake_platform.x - 3.5,
                                                         fake_platform.y - 1.5,
                                                         fake_platform.z - scene_movement))
 
             if np.sin((fake_platform.blink_time - t1)*np.pi*5) < 0 and fake_platform.blinking:
-                mvpPipeline.drawShape(fake_platform.hitbox_shape)
+                mj_pipeline.drawShape(fake_platform.hitbox_shape)
             elif not fake_platform.blinking:
-                mvpPipeline.drawShape(fake_platform.hitbox_shape)
+                mj_pipeline.drawShape(fake_platform.hitbox_shape)
 
         # Move scene upon reaching 2 floors above current one
         if math.floor(controller.monkey.z) > controller.current_floor + 1.0 and scene_moving is False:
@@ -282,11 +283,11 @@ if __name__ == "__main__":
             if a_bullet.hitbox_shape is None:
                 a_bullet.createShape()
 
-            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+            glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(a_bullet.x - 3.5,
                                                         a_bullet.y - 1.5,
                                                         a_bullet.z - scene_movement))
-            mvpPipeline.drawShape(a_bullet.hitbox_shape)
+            mj_pipeline.drawShape(a_bullet.hitbox_shape)
 
         # Win condition
         if controller.won is False and controller.monkey.has_banana:
@@ -325,9 +326,9 @@ if __name__ == "__main__":
 
         # World axis
         if controller.showAxis:
-            glUniformMatrix4fv(glGetUniformLocation(mvpPipeline.shaderProgram, "model"),
+            glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.identity())
-            mvpPipeline.drawShape(gpuAxis, GL_LINES)
+            mj_pipeline.drawShape(gpuAxis, GL_LINES)
 
         # Once the render is done, buffers are swapped, showing only the complete scene.
         glfw.swap_buffers(window)

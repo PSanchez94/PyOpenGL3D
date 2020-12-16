@@ -101,14 +101,14 @@ class Controller:
         elif self.monkey.x < 0.0:
             self.monkey.x = 0.0
             return
-        elif self.monkey.x > 6.5:
-            self.monkey.x = 6.5
+        elif self.monkey.x > 6.0:
+            self.monkey.x = 6.0
             return
-        elif self.monkey.y < 0.0:
-            self.monkey.y = 0.0
+        elif self.monkey.y < -0.5:
+            self.monkey.y = -0.5
             return
-        elif self.monkey.y > 3.9:
-            self.monkey.y = 3.9
+        elif self.monkey.y > 3.0:
+            self.monkey.y = 3.0
             return
 
     def add_platform(self, x, y, z):
