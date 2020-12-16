@@ -59,6 +59,7 @@ def createPlane(axis, x, y, texture):
 
     return bs.Shape(vertices, indices, texture)
 
+
 def createHeartQuad():
 
     # Defining locations and colors for each vertex of the shape
@@ -76,15 +77,6 @@ def createHeartQuad():
          2, 3, 0]
 
     return bs.Shape(vertices, indices, "texture/heart.png")
-
-
-def drawSky(scene_mvmt):
-    # Drawing Planes
-    glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
-                       1, GL_TRUE, tr.translate(-3.5, -2.0, -scene_movement))
-    mj_pipeline.drawShape(gpuZPlane)
-    mj_pipeline.drawShape(gpuBackPlane)
-    mj_pipeline.drawShape(gpuSidePlane)
 
 
 def on_key(window, key, scancode, action, mods):
@@ -168,12 +160,12 @@ if __name__ == "__main__":
     # Creating shapes on GPU memory
 
     # Health GPUShape
-    gpuRedQuad = es.toGPUShape(createHeartQuad(), GL_REPEAT, GL_LINEAR)
+    gpuHeartQuad = es.toGPUShape(createHeartQuad(), GL_REPEAT, GL_LINEAR)
 
     # Creating the main world planes
     gpuFloorPlane = es.toGPUShape(createPlane("z", 9, 9, "texture/grass.png"), GL_REPEAT, GL_LINEAR)
-    gpuBackPlane = es.toGPUShape(createPlane("x", 9, 4*9, "texture/skyfull.png"), GL_REPEAT, GL_LINEAR)
-    gpuSidePlane = es.toGPUShape(createPlane("y", 9, 4*9, "texture/skyfull.png"), GL_REPEAT, GL_LINEAR)
+    gpuBackPlane = es.toGPUShape(createPlane("x", 9, 4*9, "texture/skyfullside.png"), GL_REPEAT, GL_LINEAR)
+    gpuSidePlane = es.toGPUShape(createPlane("y", 9, 4*9, "texture/skyfullside.png"), GL_REPEAT, GL_LINEAR)
 
     scene_movement = 1.0
     scene_moving = False
@@ -185,7 +177,7 @@ if __name__ == "__main__":
     # Creating monkey and banan and their GPUShapes
     controller.createMonkey()
     controller.monkey.createShape(
-        es.toGPUShape(controller.monkey.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR))
+        es.toGPUShape(controller.monkey.hitboxShape("texture/monkey.png"), GL_REPEAT, GL_LINEAR))
     controller.createBanana()
     controller.banana.createShape(
         es.toGPUShape(controller.banana.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR))
@@ -265,17 +257,22 @@ if __name__ == "__main__":
         mj_pipeline.drawShape(gpuSidePlane)
 
         # Drawing Monkey
-        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(controller.monkey.x - 3.5,
-                                                    controller.monkey.y - 1.5,
-                                                    controller.monkey.z - scene_movement))
+        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"), 1, GL_TRUE,
+                           tr.translate(controller.monkey.x - 3.5,
+                                        controller.monkey.y - 1.5,
+                                        controller.monkey.z - scene_movement))
         mj_pipeline.drawShape(controller.monkey.hitbox_shape)
 
         # Drawing Banana
-        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
-                           1, GL_TRUE, tr.translate(controller.banana.x - 3.5,
-                                                    controller.banana.y - 1.5,
-                                                    controller.banana.z - scene_movement))
+        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"), 1, GL_TRUE, tr.matmul([
+            tr.translate(controller.banana.x - 3.5,
+                         controller.banana.y - 1.5,
+                         controller.banana.z - scene_movement),
+            tr.uniformScale(np.sin(t1 * 2)*0.5 + 1.5),
+            tr.translate(- controller.banana.width*0.5,
+                         - controller.banana.depth*0.5,
+                         - controller.banana.height*0.5)]))
+
         mj_pipeline.drawShape(controller.banana.hitbox_shape)
 
         # Drawing Platforms
@@ -330,13 +327,13 @@ if __name__ == "__main__":
             controller.monkey.start_jump()
 
         # Bullets iteration
-        controller.check_bullets(scene_movement, t1)
+        controller.check_bullets(t1)
 
         # Drawing Bullets
         for a_bullet in controller.bullets:
             if bullet_gpuShape is None:
                 bullet_gpuShape = es.toGPUShape(
-                a_bullet.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR)
+                    a_bullet.hitboxShape("texture/bullet.png"), GL_REPEAT, GL_LINEAR)
             if a_bullet.hitbox_shape is None:
                 a_bullet.createShape(bullet_gpuShape)
 
@@ -345,7 +342,6 @@ if __name__ == "__main__":
                                                         a_bullet.y - 1.5,
                                                         a_bullet.z - scene_movement))
             mj_pipeline.drawShape(a_bullet.hitbox_shape)
-
         # Win condition
         if controller.won is False and controller.monkey.has_banana:
             controller.won = True
@@ -383,7 +379,7 @@ if __name__ == "__main__":
             glUniformMatrix4fv(glGetUniformLocation(ui_pipeline.shaderProgram, "transform"), 1, GL_TRUE, tr.matmul([
                 tr.scale(0.1, 0.1, 1.0),
                 tr.translate(-4.0 - (3-i)*1.5, -9.0, 0)]))
-            ui_pipeline.drawShape(gpuRedQuad)
+            ui_pipeline.drawShape(gpuHeartQuad)
 
         # Once the render is done, buffers are swapped, showing only the complete scene.
         glfw.swap_buffers(window)

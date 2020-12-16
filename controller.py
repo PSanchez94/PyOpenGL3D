@@ -117,7 +117,7 @@ class Controller:
     def add_fake_platform(self, x, y, z):
         self.fake_platform_list.append(solids.FakePlatform(x+1, y, z+1))
 
-    def check_bullets(self, scene, time):
+    def check_bullets(self, time):
         if len(self.bullets) < 4 and time - self.last_bullet_time > 1.0:
             direction = rnd.randrange(0, 2)
             self.bullets.append(bullet.Bullet(rnd.randrange(1, 6) + 0.4,
@@ -133,9 +133,9 @@ class Controller:
                 self.monkey.hitpoints -= a_bullet.collided
 
     def createBanana(self):
-        self.banana = solids.Banana(self.platform_list[len(self.platform_list) - 1].x +
+        self.banana = solids.Banana(self.platform_list[len(self.platform_list) - 1].x - 0.3 +
                                     self.platform_list[len(self.platform_list) - 1].width*0.5,
-                                    self.platform_list[len(self.platform_list) - 1].y +
+                                    self.platform_list[len(self.platform_list) - 1].y - 0.2 +
                                     self.platform_list[len(self.platform_list) - 1].depth*0.5,
                                     self.platform_list[len(self.platform_list) - 1].z + 0.6)
 
