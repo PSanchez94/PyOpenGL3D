@@ -122,7 +122,7 @@ class Controller:
             direction = rnd.randrange(0, 2)
             self.bullets.append(bullet.Bullet(rnd.randrange(1, 6) + 0.4,
                                               4.0*direction,
-                                              round(scene, 1) + rnd.randrange(0, 4) - 0.7,
+                                              round(self.monkey.z, 1) + rnd.randrange(0, 4) - 0.7,
                                               direction))
             self.last_bullet_time = time
 
@@ -131,7 +131,6 @@ class Controller:
             if a_bullet.collided or a_bullet.y > 4.0 or a_bullet.y < -0.4:
                 self.bullets.remove(a_bullet)
                 self.monkey.hitpoints -= a_bullet.collided
-
 
     def createBanana(self):
         self.banana = solids.Banana(self.platform_list[len(self.platform_list) - 1].x +

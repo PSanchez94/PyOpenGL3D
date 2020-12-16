@@ -23,7 +23,7 @@ import controller
 controller = controller.Controller()
 
 
-def createPlane(axis, length, texture):
+def createPlane(axis, x, y, texture):
     vertices = None
 
     # Defining the location and colors of each vertex  of the shape
@@ -31,25 +31,25 @@ def createPlane(axis, length, texture):
         vertices = [
             #    positions        colors
             0.0, 0.0, 0.0, 0.0, 1.0,
-            length, 0.0, 0.0, 1.0, 1.0,
-            length, length, 0.0, 1.0, 0.0,
-            0.0, length, 0.0, 0.0, 0.0]
+            x, 0.0, 0.0, 1.0, 1.0,
+            x, y, 0.0, 1.0, 0.0,
+            0.0, y, 0.0, 0.0, 0.0]
 
     elif axis == "x":
         vertices = [
             #    positions        colors
             0.0, 0.0, 0.0, 0.0, 1.0,
-            0.0, 0.0, length, 0.0, 0.0,
-            length, 0, length, 1.0, 0.0,
-            length, 0, 0, 1.0, 1.0]
+            0.0, 0.0, y, 0.0, 0.0,
+            x, 0, y, 1.0, 0.0,
+            x, 0, 0, 1.0, 1.0]
 
     elif axis == "y":
         vertices = [
             #    positions        colors
             0.0, 0.0, 0.0, 0.0, 1.0,
-            0.0, length, 0.0, 1.0, 1.0,
-            0.0, length, length, 1.0, 0.0,
-            0.0, 0.0, length, 0.0, 0.0]
+            0.0, x, 0.0, 1.0, 1.0,
+            0.0, x, y, 1.0, 0.0,
+            0.0, 0.0, y, 0.0, 0.0]
 
     # Defining connections among vertices
     # We have a triangle every 3 indices specified
@@ -83,8 +83,8 @@ def drawSky(scene_mvmt):
     glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                        1, GL_TRUE, tr.translate(-3.5, -2.0, -scene_movement))
     mj_pipeline.drawShape(gpuZPlane)
-    mj_pipeline.drawShape(gpuXPlane)
-    mj_pipeline.drawShape(gpuYPlane)
+    mj_pipeline.drawShape(gpuBackPlane)
+    mj_pipeline.drawShape(gpuSidePlane)
 
 
 def on_key(window, key, scancode, action, mods):
@@ -171,9 +171,9 @@ if __name__ == "__main__":
     gpuRedQuad = es.toGPUShape(createHeartQuad(), GL_REPEAT, GL_LINEAR)
 
     # Creating the main world planes
-    gpuZPlane = es.toGPUShape(createPlane("z", 8, "texture/grass.png"), GL_REPEAT, GL_LINEAR)
-    gpuXPlane = es.toGPUShape(createPlane("x", 8, "texture/sky1.png"), GL_REPEAT, GL_LINEAR)
-    gpuYPlane = es.toGPUShape(createPlane("y", 8, "texture/sky1.png"), GL_REPEAT, GL_LINEAR)
+    gpuFloorPlane = es.toGPUShape(createPlane("z", 9, 9, "texture/grass.png"), GL_REPEAT, GL_LINEAR)
+    gpuBackPlane = es.toGPUShape(createPlane("x", 9, 4*9, "texture/skyfull.png"), GL_REPEAT, GL_LINEAR)
+    gpuSidePlane = es.toGPUShape(createPlane("y", 9, 4*9, "texture/skyfull.png"), GL_REPEAT, GL_LINEAR)
 
     scene_movement = 1.0
     scene_moving = False
@@ -260,9 +260,9 @@ if __name__ == "__main__":
         # Drawing Planes
         glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                            1, GL_TRUE, tr.translate(-3.5, -2.0, -scene_movement))
-        mj_pipeline.drawShape(gpuZPlane)
-        mj_pipeline.drawShape(gpuXPlane)
-        mj_pipeline.drawShape(gpuYPlane)
+        mj_pipeline.drawShape(gpuFloorPlane)
+        mj_pipeline.drawShape(gpuBackPlane)
+        mj_pipeline.drawShape(gpuSidePlane)
 
         # Drawing Monkey
         glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
