@@ -180,7 +180,7 @@ if __name__ == "__main__":
         es.toGPUShape(controller.monkey.hitboxShape("texture/monkey.png"), GL_REPEAT, GL_LINEAR))
     controller.createBanana()
     controller.banana.createShape(
-        es.toGPUShape(controller.banana.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR))
+        es.toGPUShape(controller.banana.hitboxShape("texture/bananacrate.png"), GL_REPEAT, GL_LINEAR))
 
     # Creating platform and bullet GPUShapes
     platform_gpuShape = None
@@ -346,7 +346,8 @@ if __name__ == "__main__":
                          controller.banana.z - scene_movement),
             tr.translate(- controller.banana.width*0.5,
                          - controller.banana.depth*0.5,
-                         - controller.banana.height*0.5)]
+                         - controller.banana.height*0.5),
+            tr.rotationZ(t1 * 2)]
 
         # Win condition
         if controller.won is False and controller.monkey.has_banana:
@@ -361,6 +362,7 @@ if __name__ == "__main__":
             glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"), 1, GL_TRUE, tr.matmul([
                 banana_translates[0],
                 tr.uniformScale(np.sin(t1 * 10) * 0.5 + 1.5),
+                banana_translates[2],
                 banana_translates[1]]))
             mj_pipeline.drawShape(controller.banana.hitbox_shape)
 
@@ -370,6 +372,7 @@ if __name__ == "__main__":
             glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"), 1, GL_TRUE, tr.matmul([
                 banana_translates[0],
                 tr.uniformScale(np.sin(t1 * 3) * 0.5 + 1.5),
+                banana_translates[2],
                 banana_translates[1]]))
             mj_pipeline.drawShape(controller.banana.hitbox_shape)
             controller.moveMonkey()
