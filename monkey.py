@@ -9,6 +9,7 @@ import include.easy_shaders as es
 import solids
 
 jump_start_vel = 0.105
+from OpenGL.GL import *
 
 
 class Monkey(solids.HitBox):
@@ -47,9 +48,6 @@ class Monkey(solids.HitBox):
         self.is_falling = True
         self.jump_vel = 0.0
         self.is_jumping = False
-
-    def createShape(self):
-        self.hitbox_shape = es.toGPUShape(self.hitboxShape())
 
     def collidesWith(self, hitbox):
         if self.collision:

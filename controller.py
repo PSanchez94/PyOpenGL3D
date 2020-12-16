@@ -122,7 +122,7 @@ class Controller:
             direction = rnd.randrange(0, 2)
             self.bullets.append(bullet.Bullet(rnd.randrange(1, 6) + 0.4,
                                               4.0*direction,
-                                              round(scene, 1) + rnd.randrange(0, 3) - 0.7,
+                                              round(scene, 1) + rnd.randrange(0, 4) - 0.7,
                                               direction))
             self.last_bullet_time = time
 

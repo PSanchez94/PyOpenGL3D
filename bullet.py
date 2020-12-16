@@ -4,6 +4,8 @@ Pablo Sanchez.
 Monkey movement and animation definitions.
 
 """
+from OpenGL.GL import *
+
 import include.easy_shaders as es
 
 import solids
@@ -17,6 +19,3 @@ class Bullet(solids.HitBox):
 
     def move_bullet(self):
         self.y += self.speed
-
-    def createShape(self):
-        self.hitbox_shape = es.toGPUShape(self.hitboxShape(0.3, 0.1, 0.4))

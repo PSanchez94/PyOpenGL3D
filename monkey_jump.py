@@ -23,33 +23,33 @@ import controller
 controller = controller.Controller()
 
 
-def createPlane(axis, length, r, g, b):
+def createPlane(axis, length, texture):
     vertices = None
 
     # Defining the location and colors of each vertex  of the shape
     if axis == "z":
         vertices = [
             #    positions        colors
-            0, 0, 0, r, g, b,
-            length, 0, 0, r, g, b,
-            length, length, 0, r, g, b,
-            0, length, 0, r, g, b]
+            0.0, 0.0, 0.0, 0.0, 1.0,
+            length, 0.0, 0.0, 1.0, 1.0,
+            length, length, 0.0, 1.0, 0.0,
+            0.0, length, 0.0, 0.0, 0.0]
 
     elif axis == "x":
         vertices = [
             #    positions        colors
-            0, 0, 0, r, g, b,
-            0, 0, length, r, g, b,
-            length, 0, length, r, g, b,
-            length, 0, 0, r, g, b]
+            0.0, 0.0, 0.0, 0.0, 1.0,
+            0.0, 0.0, length, 0.0, 0.0,
+            length, 0, length, 1.0, 0.0,
+            length, 0, 0, 1.0, 1.0]
 
     elif axis == "y":
         vertices = [
             #    positions        colors
-            0, 0, 0, r, g, b,
-            0, length, 0, r, g, b,
-            0, length, length, r, g, b,
-            0, 0, length, r, g, b]
+            0.0, 0.0, 0.0, 0.0, 1.0,
+            0.0, length, 0.0, 1.0, 1.0,
+            0.0, length, length, 1.0, 0.0,
+            0.0, 0.0, length, 0.0, 0.0]
 
     # Defining connections among vertices
     # We have a triangle every 3 indices specified
@@ -57,7 +57,34 @@ def createPlane(axis, length, r, g, b):
         0, 1, 2,
         2, 3, 0]
 
-    return bs.Shape(vertices, indices)
+    return bs.Shape(vertices, indices, texture)
+
+def createHeartQuad():
+
+    # Defining locations and colors for each vertex of the shape
+    vertices = [
+    #   positions        colors
+        0.0, 0.0, 0.0, 0.0, 1.0,
+        1.0, 0.0, 0.0, 1.0, 1.0,
+        1.0, 1.0, 0.0, 1.0, 0.0,
+        0.0, 1.0, 0.0, 0.0, 0.0]
+
+    # Defining connections among vertices
+    # We have a triangle every 3 indices specified
+    indices = [
+         0, 1, 2,
+         2, 3, 0]
+
+    return bs.Shape(vertices, indices, "texture/heart.png")
+
+
+def drawSky(scene_mvmt):
+    # Drawing Planes
+    glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
+                       1, GL_TRUE, tr.translate(-3.5, -2.0, -scene_movement))
+    mj_pipeline.drawShape(gpuZPlane)
+    mj_pipeline.drawShape(gpuXPlane)
+    mj_pipeline.drawShape(gpuYPlane)
 
 
 def on_key(window, key, scancode, action, mods):
@@ -124,10 +151,8 @@ if __name__ == "__main__":
     glfw.set_key_callback(window, on_key)
 
     # Assembling the shader program (pipeline) with both shaders
-    mj_pipeline = es.SimpleModelViewProjectionShaderProgram()
-
-    # Telling OpenGL to use our shader program
-    glUseProgram(mj_pipeline.shaderProgram)
+    mj_pipeline = es.SimpleTextureModelViewProjectionShaderProgram()
+    ui_pipeline = es.SimpleTextureTransformShaderProgram()
 
     # Setting up the clear screen color
     glClearColor(0.15, 0.15, 0.15, 1.0)
@@ -136,14 +161,19 @@ if __name__ == "__main__":
     # and which one is at the back
     glEnable(GL_DEPTH_TEST)
 
+    # Enabling transparencies
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
     # Creating shapes on GPU memory
-    # TODO: Remove axis
-    gpuAxis = es.toGPUShape(bs.createAxis(7))
+
+    # Health GPUShape
+    gpuRedQuad = es.toGPUShape(createHeartQuad(), GL_REPEAT, GL_LINEAR)
 
     # Creating the main world planes
-    gpuZPlane = es.toGPUShape(createPlane("z", 12, 0.3, 0.9, 0.3))
-    gpuXPlane = es.toGPUShape(createPlane("x", 12, 0.3, 0.3, 0.9))
-    gpuYPlane = es.toGPUShape(createPlane("y", 12, 0.5, 0.5, 1))
+    gpuZPlane = es.toGPUShape(createPlane("z", 8, "texture/grass.png"), GL_REPEAT, GL_LINEAR)
+    gpuXPlane = es.toGPUShape(createPlane("x", 8, "texture/sky1.png"), GL_REPEAT, GL_LINEAR)
+    gpuYPlane = es.toGPUShape(createPlane("y", 8, "texture/sky1.png"), GL_REPEAT, GL_LINEAR)
 
     scene_movement = 1.0
     scene_moving = False
@@ -152,21 +182,31 @@ if __name__ == "__main__":
     monkey_left = False
     ortho_view = False
 
+    # Creating monkey and banan and their GPUShapes
     controller.createMonkey()
-    controller.monkey.createShape()
+    controller.monkey.createShape(
+        es.toGPUShape(controller.monkey.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR))
     controller.createBanana()
-    controller.banana.createShape()
+    controller.banana.createShape(
+        es.toGPUShape(controller.banana.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR))
 
+    # Creating platform and bullet GPUShapes
+    platform_gpuShape = None
+    bullet_gpuShape = None
     for platform in controller.platform_list:
-        platform.createShape()
+        if platform_gpuShape is None:
+            platform_gpuShape = es.toGPUShape(
+                platform.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR)
+        platform.createShape(platform_gpuShape)
 
     for fake_platform in controller.fake_platform_list:
-        fake_platform.createShape()
+        if platform_gpuShape is None:
+            platform_gpuShape = es.toGPUShape(
+                platform.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR)
+        fake_platform.createShape(platform_gpuShape)
 
     # Using perspective projection
     projection = tr.perspective(50, float(width) / float(height), 0.1, 100)
-    glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "projection"),
-                       1, GL_TRUE, projection)
 
     # Main angled view
     side_view = np.array([5 * np.cos(np.pi / 4), 10 * np.cos(np.pi / 4), 2])
@@ -203,6 +243,14 @@ if __name__ == "__main__":
             np.array([0, 0, 1])
         )
 
+        ## 3D shader program
+        glUseProgram(mj_pipeline.shaderProgram)
+
+        # Define perspective projection
+        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "projection"),
+                           1, GL_TRUE, projection)
+
+        # Define camera view
         glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "view"),
                            1, GL_TRUE, view)
 
@@ -237,7 +285,7 @@ if __name__ == "__main__":
                                                         platform.y - 1.5,
                                                         platform.z - scene_movement))
 
-            if scene_up_view and -2 < platform.z - scene_movement < 1.5:
+            if scene_up_view and -3 < platform.z - controller.monkey.z < 1.0:
                 mj_pipeline.drawShape(platform.hitbox_shape)
             elif not scene_up_view:
                 mj_pipeline.drawShape(platform.hitbox_shape)
@@ -252,7 +300,12 @@ if __name__ == "__main__":
             if np.sin((fake_platform.blink_time - t1)*np.pi*5) < 0 and fake_platform.blinking:
                 mj_pipeline.drawShape(fake_platform.hitbox_shape)
             elif not fake_platform.blinking:
-                mj_pipeline.drawShape(fake_platform.hitbox_shape)
+                if scene_up_view and -3 < fake_platform.z - controller.monkey.z < 1.0:
+                    mj_pipeline.drawShape(fake_platform.hitbox_shape)
+                elif not scene_up_view:
+                    mj_pipeline.drawShape(fake_platform.hitbox_shape)
+
+        ## Game mechanics within iteration
 
         # Move scene upon reaching 2 floors above current one
         if math.floor(controller.monkey.z) > controller.current_floor + 1.0 and scene_moving is False:
@@ -268,6 +321,7 @@ if __name__ == "__main__":
         # Lose condition upon reaching base of scene
         if (controller.monkey.z < scene_movement - 2.3 or
                 controller.monkey.hitpoints == 0) and controller.lost is False:
+            controller.monkey.hitpoints = 0
             controller.lost = True
             controller.end_game_time = t1
 
@@ -280,8 +334,11 @@ if __name__ == "__main__":
 
         # Drawing Bullets
         for a_bullet in controller.bullets:
+            if bullet_gpuShape is None:
+                bullet_gpuShape = es.toGPUShape(
+                a_bullet.hitboxShape("texture/platform3d.png"), GL_REPEAT, GL_LINEAR)
             if a_bullet.hitbox_shape is None:
-                a_bullet.createShape()
+                a_bullet.createShape(bullet_gpuShape)
 
             glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
                                1, GL_TRUE, tr.translate(a_bullet.x - 3.5,
@@ -318,17 +375,15 @@ if __name__ == "__main__":
                 else:
                     sys.exit("You fell out.")
 
-        # Filling or not the shapes depending on the controller state
-        if controller.fillPolygon:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-        else:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        ## UI 2D shader program
+        glUseProgram(ui_pipeline.shaderProgram)
 
-        # World axis
-        if controller.showAxis:
-            glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
-                               1, GL_TRUE, tr.identity())
-            mj_pipeline.drawShape(gpuAxis, GL_LINES)
+        # Draw health UI
+        for i in range(controller.monkey.hitpoints):
+            glUniformMatrix4fv(glGetUniformLocation(ui_pipeline.shaderProgram, "transform"), 1, GL_TRUE, tr.matmul([
+                tr.scale(0.1, 0.1, 1.0),
+                tr.translate(-4.0 - (3-i)*1.5, -9.0, 0)]))
+            ui_pipeline.drawShape(gpuRedQuad)
 
         # Once the render is done, buffers are swapped, showing only the complete scene.
         glfw.swap_buffers(window)
