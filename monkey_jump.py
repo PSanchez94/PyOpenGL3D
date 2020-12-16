@@ -263,18 +263,6 @@ if __name__ == "__main__":
                                         controller.monkey.z - scene_movement))
         mj_pipeline.drawShape(controller.monkey.hitbox_shape)
 
-        # Drawing Banana
-        glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"), 1, GL_TRUE, tr.matmul([
-            tr.translate(controller.banana.x - 3.5,
-                         controller.banana.y - 1.5,
-                         controller.banana.z - scene_movement),
-            tr.uniformScale(np.sin(t1 * 2)*0.5 + 1.5),
-            tr.translate(- controller.banana.width*0.5,
-                         - controller.banana.depth*0.5,
-                         - controller.banana.height*0.5)]))
-
-        mj_pipeline.drawShape(controller.banana.hitbox_shape)
-
         # Drawing Platforms
         for platform in controller.platform_list:
             glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
@@ -337,11 +325,29 @@ if __name__ == "__main__":
             if a_bullet.hitbox_shape is None:
                 a_bullet.createShape(bullet_gpuShape)
 
-            glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
-                               1, GL_TRUE, tr.translate(a_bullet.x - 3.5,
-                                                        a_bullet.y - 1.5,
-                                                        a_bullet.z - scene_movement))
+            bullet_translate = tr.translate(a_bullet.x - 3.5,
+                                            a_bullet.y - 1.5,
+                                            a_bullet.z - scene_movement)
+            if a_bullet.speed < 0.0:
+                glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"), 1, GL_TRUE, tr.matmul([
+                                   bullet_translate,
+                                   tr.rotationZ(np.pi),
+                                   tr.translate(-a_bullet.width*0.5,
+                                                -a_bullet.depth*0.5,
+                                                -a_bullet.height*0.5)]))
+            else:
+                glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"),
+                                   1, GL_TRUE, bullet_translate)
             mj_pipeline.drawShape(a_bullet.hitbox_shape)
+
+        banana_translates = [
+            tr.translate(controller.banana.x - 3.5,
+                         controller.banana.y - 1.5,
+                         controller.banana.z - scene_movement),
+            tr.translate(- controller.banana.width*0.5,
+                         - controller.banana.depth*0.5,
+                         - controller.banana.height*0.5)]
+
         # Win condition
         if controller.won is False and controller.monkey.has_banana:
             controller.won = True
@@ -351,10 +357,23 @@ if __name__ == "__main__":
             monkey_right = False
             controller.leftKeyOn = False
             controller.rightKeyOn = False
-            if t1 - controller.end_game_time > 0.4:
+
+            glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"), 1, GL_TRUE, tr.matmul([
+                banana_translates[0],
+                tr.uniformScale(np.sin(t1 * 10) * 0.5 + 1.5),
+                banana_translates[1]]))
+            mj_pipeline.drawShape(controller.banana.hitbox_shape)
+
+            if t1 - controller.end_game_time > 2.0:
                 sys.exit("You won!")
         else:
+            glUniformMatrix4fv(glGetUniformLocation(mj_pipeline.shaderProgram, "model"), 1, GL_TRUE, tr.matmul([
+                banana_translates[0],
+                tr.uniformScale(np.sin(t1 * 3) * 0.5 + 1.5),
+                banana_translates[1]]))
+            mj_pipeline.drawShape(controller.banana.hitbox_shape)
             controller.moveMonkey()
+
 
         # Lose animation start and end
         if controller.lost:

@@ -133,9 +133,9 @@ class Controller:
                 self.monkey.hitpoints -= a_bullet.collided
 
     def createBanana(self):
-        self.banana = solids.Banana(self.platform_list[len(self.platform_list) - 1].x - 0.3 +
+        self.banana = solids.Banana(self.platform_list[len(self.platform_list) - 1].x - 0.25 +
                                     self.platform_list[len(self.platform_list) - 1].width*0.5,
-                                    self.platform_list[len(self.platform_list) - 1].y - 0.2 +
+                                    self.platform_list[len(self.platform_list) - 1].y - 0.15 +
                                     self.platform_list[len(self.platform_list) - 1].depth*0.5,
                                     self.platform_list[len(self.platform_list) - 1].z + 0.6)
 
